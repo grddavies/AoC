@@ -25,6 +25,22 @@ impl Sign {
             None => panic!(),
         }
     }
+
+    pub fn inverse_compete(&self, outcome: Outcome) -> &Self {
+        match outcome {
+            Outcome::Draw => &self,
+            Outcome::Win => match self {
+                Sign::Rock => &Sign::Paper,
+                Sign::Scissors => &Sign::Rock,
+                Sign::Paper => &Sign::Scissors,
+            },
+            Outcome::Loss => match self {
+                Sign::Rock => &Sign::Scissors,
+                Sign::Scissors => &Sign::Paper,
+                Sign::Paper => &Sign::Rock,
+            },
+        }
+    }
 }
 
 impl PartialOrd for Sign {

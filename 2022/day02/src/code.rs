@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::{sign::{Sign}, Error};
+use crate::{sign::Sign, Error, Outcome};
 
 #[derive(Debug)]
 pub enum LeftCode {
@@ -39,11 +39,11 @@ pub enum RightCode {
 }
 
 impl RightCode {
-    pub fn to_sign(&self) -> Sign {
+    pub fn to_outcome(&self) -> Outcome {
         match self {
-            RightCode::X => Sign::Rock,
-            RightCode::Y => Sign::Paper,
-            RightCode::Z => Sign::Scissors,
+            RightCode::X => Outcome::Loss,
+            RightCode::Y => Outcome::Draw,
+            RightCode::Z => Outcome::Win,
         }
     }
 }
