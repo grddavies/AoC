@@ -17,6 +17,10 @@ impl Range {
             end: cmp::max(self.end, other.end),
         }
     }
+
+    fn contains(&self, other: &Self) -> bool {
+        self.union(other) == *self
+    }
 }
 
 impl FromStr for Range {
@@ -53,7 +57,7 @@ fn main() {
             let strings = line.split(',');
             let ranges: Vec<Range> = strings.filter_map(|s| s.parse::<Range>().ok()).collect();
             if let [a, b] = &ranges[..] {
-                if a.union(b) == *a || b.union(a) == *b {
+                if a.contains(b) || b.contains(a) {
                     count += 1;
                 }
             }
