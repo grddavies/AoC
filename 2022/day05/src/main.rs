@@ -87,8 +87,11 @@ struct Cli {
 fn main() {
     let cli = Cli::parse();
     match fs::read_to_string(cli.input) {
-        Ok(input_string) => solve(input_string, cli.part_2),
-        Err(e) => println!("[ERROR]: {}", e),
+        Ok(input_string) => match solve(input_string, cli.part_2) {
+            Ok(out) => println!("{out}"),
+            Err(e) => println!("[ERROR]: {e}"),
+        },
+        Err(e) => println!("[ERROR]: {e}"),
     }
 }
 
@@ -110,14 +113,14 @@ fn parse_input<T: AsRef<str>>(input_string: T) -> Result<(MultiStack, Vec<Move>)
     }
 }
 
-fn solve(input_string: String, part_2: bool) {
+fn solve(input_string: String, part_2: bool) -> Result<String, String> {
     match parse_input(input_string) {
         Ok((mut state, moves)) => {
             moves.iter().for_each(|m| state.apply(m, part_2));
             let tops: String = state.stacks.iter().filter_map(|v| v.last()).collect();
             assert!(tops.len() == state.stacks.len());
-            println!("{tops}");
+            Ok(tops)
         }
-        Err(e) => println!("[ERROR]: {e}"),
+        Err(e) => Err(e),
     }
 }
