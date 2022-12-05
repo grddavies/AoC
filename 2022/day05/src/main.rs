@@ -7,11 +7,15 @@ struct MultiStack {
 }
 
 impl MultiStack {
-    fn apply(&mut self, action: &Move) {
+    fn apply(&mut self, action: &Move, part_2: bool) {
         let src = &mut self.stacks[action.src];
-        let removed: Vec<char> = src.drain(src.len() - action.qty..src.len()).rev().collect();
+        let removed: Vec<char> = src.drain(src.len() - action.qty..src.len()).collect();
         let dst = &mut self.stacks[action.dst];
-        dst.extend(removed);
+        if part_2 {
+            dst.extend(removed);
+            return;
+        }
+        dst.extend(removed.iter().rev());
     }
 }
 
@@ -74,12 +78,16 @@ impl FromStr for Move {
 struct Cli {
     // File to read input from
     input: String,
+
+    // Solve part 2 of the problem
+    #[arg(long)]
+    part_2: bool,
 }
 
 fn main() {
     let cli = Cli::parse();
     match fs::read_to_string(cli.input) {
-        Ok(input_string) => part_1(input_string),
+        Ok(input_string) => solve(input_string, cli.part_2),
         Err(e) => println!("[ERROR]: {}", e),
     }
 }
@@ -102,10 +110,10 @@ fn parse_input<T: AsRef<str>>(input_string: T) -> Result<(MultiStack, Vec<Move>)
     }
 }
 
-fn part_1(input_string: String) {
+fn solve(input_string: String, part_2: bool) {
     match parse_input(input_string) {
         Ok((mut state, moves)) => {
-            moves.iter().for_each(|m| state.apply(m));
+            moves.iter().for_each(|m| state.apply(m, part_2));
             let tops: String = state.stacks.iter().filter_map(|v| v.last()).collect();
             assert!(tops.len() == state.stacks.len());
             println!("{tops}");
