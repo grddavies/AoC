@@ -1,5 +1,5 @@
 use clap::Parser;
-use std::{fs, iter, os::macos::raw::stat, str::FromStr};
+use std::{fs, iter, str::FromStr};
 
 #[derive(Debug)]
 struct MultiStack {
@@ -7,7 +7,7 @@ struct MultiStack {
 }
 
 impl MultiStack {
-    fn apply(&mut self, action: Move) {
+    fn apply(&mut self, action: &Move) {
         let src = &mut self.stacks[action.src];
         let removed: Vec<char> = src.drain(src.len() - action.qty..src.len()).rev().collect();
         let dst = &mut self.stacks[action.dst];
@@ -37,7 +37,7 @@ impl FromStr for MultiStack {
             });
             Ok(MultiStack { stacks })
         } else {
-            Err(format!("[ERROR]: Bad input:\n{}", s))
+            Err(format!("Could not parse move from\n{s}"))
         }
     }
 }
@@ -84,25 +84,32 @@ fn main() {
     }
 }
 
-fn part_1(input_string: String) {
-    if let Some((state, instructions)) = input_string.split_once("\n\n") {
+fn parse_input<T: AsRef<str>>(input_string: T) -> Result<(MultiStack, Vec<Move>), String> {
+    if let Some((state, instructions)) = input_string.as_ref().split_once("\n\n") {
         match state.parse::<MultiStack>() {
-            Ok(mut state) => {
-                instructions
+            Ok(state) => {
+                let moves: Vec<Move> = instructions
                     .lines()
-                    .for_each(|line| match line.parse::<Move>() {
-                        Ok(m) => {
-                            state.apply(m);
-                        }
-                        Err(e) => println!("[ERROR]: Bad instruction: '{e}'"),
-                    });
-                let tops: String = state.stacks.iter().filter_map(|v| v.last()).collect();
-                assert!(tops.len() == state.stacks.len());
-                println!("{tops}");
+                    // NOTE: fails silently if an instruction cannot be parsed
+                    .filter_map(|line| line.parse::<Move>().ok())
+                    .collect();
+                Ok((state, moves))
             }
-            Err(e) => println!("[ERROR]: Bad crate diagram:\n{e}"),
+            Err(e) => Err(e),
         }
     } else {
-        println!("[ERROR]: Bad input string:\n{input_string}");
+        Err(format!("Bad input:\n{}", input_string.as_ref()))
+    }
+}
+
+fn part_1(input_string: String) {
+    match parse_input(input_string) {
+        Ok((mut state, moves)) => {
+            moves.iter().for_each(|m| state.apply(m));
+            let tops: String = state.stacks.iter().filter_map(|v| v.last()).collect();
+            assert!(tops.len() == state.stacks.len());
+            println!("{tops}");
+        }
+        Err(e) => println!("[ERROR]: {e}"),
     }
 }
