@@ -21,6 +21,12 @@ impl Range {
     fn contains(&self, other: &Self) -> bool {
         self.union(other) == *self
     }
+
+    fn overlaps(&self, other: &Self) -> bool {
+        let max_start = std::cmp::max(self.start, other.start);
+        let min_end = std::cmp::min(self.end, other.end);
+        max_start <= min_end
+    }
 }
 
 impl FromStr for Range {
@@ -51,18 +57,23 @@ impl PartialEq for Range {
 
 fn main() {
     let stdin = stdin();
-    let mut count = 0;
+    let mut partial_overlaps = 0;
+    let mut total_overlaps = 0;
     stdin.lock().lines().for_each(|res| match res {
         Ok(line) => {
             let strings = line.split(',');
             let ranges: Vec<Range> = strings.filter_map(|s| s.parse::<Range>().ok()).collect();
             if let [a, b] = &ranges[..] {
+                if b.overlaps(a) {
+                    partial_overlaps += 1;
+                }
                 if a.contains(b) || b.contains(a) {
-                    count += 1;
+                    total_overlaps += 1;
                 }
             }
         }
         Err(e) => panic!("Could not read line: {}", e),
     });
-    println!("{}", count);
+    println!("Total Overlaps: {}", total_overlaps);
+    println!("Partial Overlaps: {}", partial_overlaps);
 }
