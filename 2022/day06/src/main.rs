@@ -14,22 +14,25 @@ where
     uniques.len() == arr.len()
 }
 
-fn get_pos_of_first_n_distinct_chars(input: &String, n: usize) -> Option<usize> {
+/// Find index position after the first block of n distinct characters in a string
+fn get_idx_after_first_n_distinct_chars(input: &String, n: usize) -> Option<usize> {
     let chars = input.chars();
-    let mut last: Vec<char> = chars.to_owned().take(n).collect();
-    for (pos, ch) in chars.enumerate() {
-        if unique_chars(&last) {
-            return Some(pos);
-        }
-        last.rotate_left(1);
-        last[0] = ch;
-    }
-    None
+    let mut last: Vec<char> = chars.clone().take(n).collect();
+    chars
+        .enumerate()
+        .skip(n)
+        .skip_while(|(_, ch)| {
+            last.rotate_left(1);
+            last[0] = *ch;
+            !unique_chars(&last)
+        })
+        .next()
+        .map(|(pos, _)| pos)
 }
 
 #[derive(Parser)]
 #[command(name = "AoC-Day06")]
-#[command(about = "Finds index of first occurrance of a block of size n of distinct characters", long_about = None)]
+#[command(about = "Finds index of end of first block of size n of distinct characters in a string", long_about = None)]
 struct Cli {
     /// Number of distinct characters to look for
     #[arg(value_parser = clap::value_parser!(u32).range(2..=26))]
@@ -47,7 +50,7 @@ fn get_input(file: Option<PathBuf>) -> Result<String, Error> {
         let stdin = io::stdin();
         let mut input = String::new();
         match stdin.read_line(&mut input) {
-            Ok(_) => Ok(input),
+            Ok(_) => Ok(input.trim_end().to_string()),
             Err(e) => Err(e),
         }
     }
@@ -58,8 +61,8 @@ fn main() {
     let n = cli.n as usize;
 
     match get_input(cli.file) {
-        Ok(input) => match get_pos_of_first_n_distinct_chars(&input, n) {
-            Some(pos) => println!("{pos}"),
+        Ok(input) => match get_idx_after_first_n_distinct_chars(&input, n) {
+            Some(pos) => println!("{}", pos + 1), // output 1-indexed
             None => {
                 println!("[ERROR]: Could not find block of {n} distinct characters in input")
             }
