@@ -6,12 +6,13 @@ use std::io::Error;
 use std::path::PathBuf;
 use std::{fs, io};
 
-fn items_unique<T>(arr: &[T]) -> bool
+fn items_unique<T>(iter: T) -> bool
 where
-    T: Hash + Eq + Copy,
+    T: IntoIterator,
+    T::Item: Hash + Eq,
 {
-    let mut seen: HashSet<T> = HashSet::new();
-    arr.iter().all(|x| seen.insert(*x))
+    let mut seen = HashSet::new();
+    iter.into_iter().all(move |x| seen.insert(x))
 }
 
 /// Find index position after the first block of n distinct characters in a string
