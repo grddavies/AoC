@@ -6,12 +6,18 @@ use std::io::Error;
 use std::path::PathBuf;
 use std::{fs, io};
 
-fn unique_chars<T>(arr: &[T]) -> bool
+fn items_unique<T>(arr: &[T]) -> bool
 where
-    T: Hash + Eq + Clone,
+    T: Hash + Eq + Copy,
 {
-    let uniques: HashSet<T> = HashSet::from_iter(arr.iter().cloned());
-    uniques.len() == arr.len()
+    let mut seen: HashSet<T> = HashSet::new();
+    for x in arr {
+        if seen.contains(x) {
+            return false;
+        }
+        seen.insert(*x);
+    }
+    seen.len() == arr.len()
 }
 
 /// Find index position after the first block of n distinct characters in a string
@@ -24,7 +30,7 @@ fn get_idx_after_first_n_distinct_chars(input: &String, n: usize) -> Option<usiz
         .skip_while(|(_, ch)| {
             last.rotate_left(1);
             last[0] = *ch;
-            !unique_chars(&last)
+            !items_unique(&last)
         })
         .next()
         .map(|(pos, _)| pos)
