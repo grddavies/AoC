@@ -40,7 +40,7 @@ fn get_idx_after_first_n_distinct_chars(input: &String, n: usize) -> Option<usiz
 #[command(name = "AoC-Day06")]
 #[command(about = "Finds index of end of first block of size n of distinct characters in a string", long_about = None)]
 struct Cli {
-    /// Number of distinct characters to look for
+    /// Size of block to check for character uniqueness
     #[arg(value_parser = clap::value_parser!(u32).range(2..=26))]
     n: u32,
 
@@ -67,12 +67,22 @@ fn main() {
     let n = cli.n as usize;
 
     match get_input(cli.file) {
-        Ok(input) => match get_idx_after_first_n_distinct_chars(&input, n) {
-            Some(pos) => println!("{}", pos + 1), // output 1-indexed
-            None => {
-                println!("[ERROR]: Could not find block of {n} distinct characters in input")
+        Ok(input) => {
+            if input.len() <= n {
+                println!(
+                    "[ERROR]: Expected input length greater than block size. {} <= {}",
+                    input.len(),
+                    n
+                );
+                return;
             }
-        },
+            match get_idx_after_first_n_distinct_chars(&input, n) {
+                Some(pos) => println!("{}", pos + 1), // output 1-indexed
+                None => {
+                    println!("[WARN]: Could not find block of {n} distinct characters in input")
+                }
+            }
+        }
         Err(e) => println!("[ERROR]: {e}"),
     }
 }
