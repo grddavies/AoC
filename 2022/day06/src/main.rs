@@ -11,13 +11,7 @@ where
     T: Hash + Eq + Copy,
 {
     let mut seen: HashSet<T> = HashSet::new();
-    for x in arr {
-        if seen.contains(x) {
-            return false;
-        }
-        seen.insert(*x);
-    }
-    seen.len() == arr.len()
+    arr.iter().all(|x| seen.insert(*x))
 }
 
 /// Find index position after the first block of n distinct characters in a string
