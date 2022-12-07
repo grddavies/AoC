@@ -6,25 +6,23 @@ use std::io::Error;
 use std::path::PathBuf;
 use std::{fs, io};
 
-fn items_unique<T>(iter: T) -> bool
-where
-    T: IntoIterator,
-    T::Item: Hash + Eq,
-{
+fn items_unique<T: Hash + Eq>(iter: impl IntoIterator<Item = T>) -> bool {
     let mut seen = HashSet::new();
     iter.into_iter().all(move |x| seen.insert(x))
 }
 
-/// Find index position after the first block of n distinct characters in a string
-fn get_idx_after_first_n_distinct_chars(input: &String, n: usize) -> Option<usize> {
-    let chars = input.chars();
-    let mut last: Vec<char> = chars.clone().take(n).collect();
-    chars
-        .enumerate()
+/// Find index position after the first block of n distinct items in an iterator
+fn find_idx_after_n_distinct_items<T, I>(xs: I, n: usize) -> Option<usize>
+where
+    I: Iterator<Item = T> + Clone,
+    T: Hash + Eq + Copy,
+{
+    let mut last: Vec<T> = xs.clone().take(n).collect();
+    xs.enumerate()
         .skip(n)
-        .skip_while(|(_, ch)| {
+        .skip_while(|(_, x)| {
             last.rotate_left(1);
-            last[0] = *ch;
+            last[0] = *x;
             !items_unique(&last)
         })
         .next()
@@ -33,10 +31,10 @@ fn get_idx_after_first_n_distinct_chars(input: &String, n: usize) -> Option<usiz
 
 #[derive(Parser)]
 #[command(name = "AoC-Day06")]
-#[command(about = "Finds index of end of first block of size n of distinct characters in a string", long_about = None)]
+#[command(about = "Finds index after first block of size n of distinct characters in a string")]
 struct Cli {
     /// Size of block to check for character uniqueness
-    #[arg(value_parser = clap::value_parser!(u32).range(2..=26))]
+    #[arg(value_parser = clap::value_parser!(u32).range(2..))]
     n: u32,
 
     #[arg(short, long)]
@@ -71,7 +69,7 @@ fn main() {
                 );
                 return;
             }
-            match get_idx_after_first_n_distinct_chars(&input, n) {
+            match find_idx_after_n_distinct_items(input.chars(), n) {
                 Some(pos) => println!("{}", pos + 1), // output 1-indexed
                 None => {
                     println!("[WARN]: Could not find block of {n} distinct characters in input")
