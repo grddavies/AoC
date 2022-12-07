@@ -1,6 +1,8 @@
 use std::hash::Hash;
 use std::{collections::HashSet, io};
 
+const NCHARS: usize = 14;
+
 fn unique_chars<T>(arr: &[T]) -> bool
 where
     T: Hash + Eq + Clone,
@@ -11,10 +13,10 @@ where
 
 fn get_pos_of_first_four_distinct_chars(input: &String) -> Option<usize> {
     let chars = input.chars();
-    let mut last = [' '; 4];
+    let mut last = [' '; NCHARS];
     chars
         .to_owned()
-        .take(4)
+        .take(NCHARS)
         .enumerate()
         .for_each(|(i, c)| last[i] = c);
     for (pos, ch) in chars.enumerate() {
@@ -33,7 +35,9 @@ fn main() {
     match stdin.read_line(&mut buffer) {
         Ok(_) => match get_pos_of_first_four_distinct_chars(&buffer) {
             Some(pos) => println!("{pos}"),
-            None => println!("[ERROR]: No start marker found"),
+            None => {
+                println!("[ERROR]: Could not find block of {NCHARS} distinct characters in input")
+            }
         },
         Err(e) => println!("[ERROR]: {e}"),
     }
