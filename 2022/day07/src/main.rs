@@ -48,6 +48,18 @@ fn main() {
         });
     }
 
+    // Part 1
     let total: i32 = nested.values().filter(|x| **x <= 100000).sum();
-    println!("{}", total)
+    println!("P1: {}", total);
+
+    // Part 2
+    let mut sizes: Vec<&i32> = nested.values().collect();
+    const DISKSPACE: i32 = 70000000;
+    const REQUIRED: i32 = 30000000;
+    sizes.sort_unstable();
+
+    let used = nested[&PathBuf::from("/")];
+    if let Some(smallest) = sizes.iter().find(|x| ***x >= REQUIRED + used - DISKSPACE) {
+        println!("P2: {}", smallest)
+    }
 }
